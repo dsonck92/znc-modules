@@ -432,7 +432,7 @@ protected:
 template<> void TModInfo<CMysqlAuthMod>(CModInfo& Info) {
 //	Info.SetWikiPage("cyrusauth");
 	Info.SetHasArgs(true);
-	Info.SetArgsHelpText("This global module takes up to two arguments - the methods of authentication - auxprop and saslauthd");
+	Info.SetArgsHelpText("This global module takes up 4 arguments: [host] [user] [pass] [db]");
 }
 
 GLOBALMODULEDEFS(CMysqlAuthMod, "Allow users to authenticate via MySQL password verification method")
