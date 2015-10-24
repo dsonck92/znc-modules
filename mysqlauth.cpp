@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2004-2015 ZNC, see the NOTICE file for details.
  * Copyright (C) 2008 Heiko Hund <heiko@ist.eigentlich.net>
+ * Copyright (C) 2015 Daniel Sonck <daniel@sonck.nl>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
