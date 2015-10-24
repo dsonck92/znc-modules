@@ -20,3 +20,13 @@ A module which allows a custom MySQL query as authentication method. Optionally 
 * `UserMods` : Shows the network + user modules that are loaded automatically
 * `SetNetworks [net "server" ...] | ...` : a pipe delimited list of network definitions as 'netname "server1" "..."'
 * `Networks` : Show the configured networks
+
+### Compiling:
+
+To compile, you need the mysql-connector-cpp library, after instaling:
+
+```
+LIBS=-lmysqlcppconn znc-buildmod mysqlauth.cpp
+```
+
+And copy the generated `mysqlauth.so` to `~/.znc/modules/`
