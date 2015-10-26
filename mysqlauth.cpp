@@ -32,7 +32,7 @@
 #include <cppconn/driver.h>
 #include <cppconn/exception.h>
 #include <cppconn/resultset.h>
-#include <cppconn/statement.h>
+#include <cppconn/prepared_statement.h>
 
 
 #include <memory.h>
@@ -68,7 +68,11 @@ public:
 	
 		AddCommand("SetNetworks", static_cast<CModCommand::ModCmdFunc>(&CMysqlAuthMod::SetNetworksCommand), "[net \"serv\" ...] | ...");
 		AddCommand("Networks", static_cast<CModCommand::ModCmdFunc>(&CMysqlAuthMod::NetworksCommand));
-	}
+
+		AddCommand("SetQueryArgs", static_cast<CModCommand::ModCmdFunc>(&CMysqlAuthMod::SetQueryArgsCommand), "arg1, arg2, ...");
+		AddCommand("GetQueryArgs", static_cast<CModCommand::ModCmdFunc>(&CMysqlAuthMod::GetQueryArgsCommand));
+
+  }
 
 	virtual ~CMysqlAuthMod() {
 	}
@@ -131,10 +135,23 @@ public:
 
 			con->setSchema(m_sDB);
 
-			sql::Statement *stmt = con->createStatement();
-			sql::ResultSet *res  = stmt->executeQuery(GetQuery()
-			                                          .Replace_n("$u$",sUsername)
-								  .Replace_n("$p$",sPassword));
+			sql::PreparedStatement *stmt = con->prepareStatement(GetQuery());
+			
+			VCString args_map;
+			
+			GetQueryArgs(args_map);
+			
+			VCString args;
+			GetQueryArgs(args);
+
+			int I = 1;
+			for(CString arg : args)
+			{
+			  stmt->setString(I,arg.Replace_n("{user}",sUsername).Replace_n("{password}",sPassword));
+			  I++;
+			}
+
+			sql::ResultSet *res  = stmt->executeQuery();
 
 			while(res->next())
 			{
@@ -324,6 +341,41 @@ public:
 	void GetQueryCommand(const CString &sLine) {
 		PutModule("Query currently set to: "+GetNV("Query"));
 	}
+	
+	void SetQueryArgsCommand(const CString &sLine) {
+		CString sQueryArgs = sLine.Token(1,true);
+
+		if(!sQueryArgs.empty()) {
+			SetNV("QueryArgs",sQueryArgs);
+		}
+
+		PutModule("Succesfully updated argument mapping to:");
+
+		VCString args;
+		GetQueryArgs(args);
+
+		int I = 1;
+		for(CString arg : args)
+		{
+		  PutModule(CString(I) + ": " + arg);
+		  I++;
+		}
+
+  }
+	
+	void GetQueryArgsCommand(const CString &sLine) {
+		PutModule("Query argument mapping:");
+
+		VCString args;
+		GetQueryArgs(args);
+
+		int I = 1;
+		for(CString arg : args)
+		{
+		  PutModule(CString(I) + ": " + arg);
+		  I++;
+		}
+	}
 
 	void CloneUserCommand(const CString &sLine) {
 		CString sUsername = sLine.Token(1);
@@ -405,6 +457,10 @@ public:
 
 	CString GetQuery() const {
 		return GetNV("Query");
+	}
+	
+	void GetQueryArgs(VCString & args) const {
+		GetNV("QueryArgs").Split(" ",args,false,"\"","\"");
 	}
 
 	CString LoadUserMods() const {
